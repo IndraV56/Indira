@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web-based Transcription Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f1f8f6;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      text-align: center;
+      width: 80%;
+      max-width: 900px;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .controls button {
+      padding: 10px;
+      font-size: 1rem;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #audioPlayer {
+      width: 100%;
+      margin-top: 20px;
+    }
+    .transcription {
+      display: flex;
+      flex-direction: column;
+      margin-top: 20px;
+      gap: 20px;
+    }
+    .non-editable {
+      border: 1px solid #ccc;
+      padding: 10px;
+      min-height: 100px;
+      background-color: #e9f5f1;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      overflow-y: auto;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      height: 150px;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Web-based Transcription Tool</h1>
+
+    <!-- Audio Controls -->
+    <div class="controls">
+      <input type="file" id="audioFile" accept="audio/*">
+      <button id="playPauseBtn">Play</button>
+      <button id="rewindBtn">⏪</button>
+      <button id="forwardBtn">⏩</button>
+      <button id="speedControl1x">1x</button>
+      <button id="speedControl1.25x">1.25x</button>
+      <button id="speedControl1.5x">1.5x</button>
+      <button id="speedControl2x">2x</button>
+    </div>
+
+    <audio id="audioPlayer" controls></audio>
+
+    <!-- Transcription Windows -->
+    <div class="transcription">
+      <div id="savedText" class="non-editable"></div>
+      <textarea id="transcriptionText" placeholder="Start typing your transcription here..."></textarea>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const audioFileInput = document.getElementById("audioFile");
+      const audioPlayer = document.getElementById("audioPlayer");
+      const playPauseBtn = document.getElementById("playPauseBtn");
+      const rewindBtn = document.getElementById("rewindBtn");
+      const forwardBtn = document.getElementById("forwardBtn");
+      const speedControl1x = document.getElementById("speedControl1x");
+      const speedControl1_25x = document.getElementById("speedControl1.25x");
+      const speedControl1_5x = document.getElementById("speedControl1.5x");
+      const speedControl2x = document.getElementById("speedControl2x");
+      const transcriptionText = document.getElementById("transcriptionText");
+      const savedText = document.getElementById("savedText");
+
+      let isPlaying = false;
+
+      // Load Audio File
+      audioFileInput.addEventListener("change", () => {
+        const file = audioFileInput.files[0];
+        if (file && file.type.startsWith("audio/")) {
+          const audioURL = URL.createObjectURL(file);
+          audioPlayer.src = audioURL;
+          audioPlayer.load();
+          playPauseBtn.textContent = "Play";
+          isPlaying = false;
+        } else {
+          alert("Please upload a valid audio file.");
+        }
+      });
+
+      // Play/Pause Button
+      playPauseBtn.addEventListener("click", () => {
+        if (isPlaying) {
+          audioPlayer.pause();
+          playPauseBtn.textContent = "Play";
+        } else {
+          audioPlayer.play();
+          playPauseBtn.textContent = "Pause";
+        }
+        isPlaying = !isPlaying;
+      });
+
+      // Rewind and Forward
+      rewindBtn.addEventListener("click", () => {
+        audioPlayer.currentTime -= 2;
+      });
+      forwardBtn.addEventListener("click", () => {
+        audioPlayer.currentTime += 2;
+      });
+
+      // Speed Controls
+      speedControl1x.addEventListener("click", () => {
+        audioPlayer.playbackRate = 1.0;
+      });
+      speedControl1_25x.addEventListener("click", () => {
+        audioPlayer.playbackRate = 1.25;
+      });
+      speedControl1_5x.addEventListener("click", () => {
+        audioPlayer.playbackRate = 1.5;
+      });
+      speedControl2x.addEventListener("click", () => {
+        audioPlayer.playbackRate = 2.0;
+      });
+
+      // Ctrl+S to Save Content
+      document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.key.toLowerCase() === "s") {
+          e.preventDefault(); // Prevent browser Save Page dialog
+          const cursorPosition = transcriptionText.selectionStart;
+          const contentToSave = transcriptionText.value.slice(0, cursorPosition);
+
+          if (contentToSave.trim() !== "") {
+            savedText.textContent += contentToSave + "\n";
+            transcriptionText.value = transcriptionText.value.slice(cursorPosition);
+            transcriptionText.setSelectionRange(0, 0); // Move cursor to start
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
